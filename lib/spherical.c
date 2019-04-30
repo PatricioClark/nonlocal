@@ -1,10 +1,10 @@
-/* Functions used to calculate flow and interpolations */
+/* Functions used to calculate nonlocal integral in spherical module*/
 
 // Include file
 #include "spherical.h"
 
 double TrilinearInterpolation(double x, double y, double z) {
-  // Interpolate in 3D using trilinear method
+  // Interpolate in 3D using a trilinear method
   int    i;
   int    i0, i1, j0, j1, k0, k1;
   double x0, xd, y0, yd, z0, zd;
@@ -56,7 +56,9 @@ double TrilinearInterpolation(double x, double y, double z) {
 void PointsInSphere(int N, double radius,
                     double x0, double y0, double z0,
                     double *xsphere, double *ysphere, double *zsphere) {
-  // Taken from that paper
+  // Get N equally distributed points on a sphere.
+  // Algorithm taken from "Distributing Many Points on a Sphere" by Saff and
+  // Kuijlaars (1997)
   int k;
   double hk, cte;
   double theta, phi, phi_prev;
@@ -85,9 +87,8 @@ void PointsInSphere(int N, double radius,
 
 double IntegrateInArea(int N, double radius,
                        double x0, double y0, double z0) {
-  // Integrate the strain in a sphere of a given radius centred around
+  // Integrate field in a sphere of a given radius centred around
   // (x0,y0,z0)
-
   int k;
   double value;
   double xsphere[N], ysphere[N], zsphere[N];
@@ -106,8 +107,8 @@ double IntegrateInArea(int N, double radius,
 
 void IntegrateInVolume(double *result, double dr, double R,  double alpha,
                        double *xs, double *ys, double *zs, int Npoints) {
-  // Integrate the strain non-locally
-
+  // Integrate field strain non-locally using a modified 3D L-scheme at
+  // different locations
   int point;
   int i, Nr, Nsphere;
   double x0, y0, z0;

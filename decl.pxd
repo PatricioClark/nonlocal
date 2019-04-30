@@ -5,7 +5,6 @@
 DEF _Nx=50
 DEF _Ny=400
 DEF _Nz=50
-
 cdef enum:
     Nx = _Nx
     Ny = _Ny
