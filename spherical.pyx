@@ -13,7 +13,7 @@ def IntegrateInVolume(dr, R, alpha, x0, y0, z0):
 def set_field(field):
     decl.field = field
 
-def set_dxdydz(dx,y_domain,dz):
+def set_dxdydz(dx,ys,dz):
     decl.dx = dx
+    decl.ys = ys
     decl.dz = dz
-    decl.y_domain = y_domain
