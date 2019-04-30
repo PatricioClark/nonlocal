@@ -3,7 +3,7 @@
 // Include file
 #include "spherical.h"
 
-double TrilinearInterpolation(double field[Nx][Ny][Nz], double x, double y, double z) {
+double TrilinearInterpolation(double x, double y, double z) {
   // Interpolate in 3D using trilinear method
   int    i;
   int    i0, i1, j0, j1, k0, k1;
@@ -25,11 +25,11 @@ double TrilinearInterpolation(double field[Nx][Ny][Nz], double x, double y, doub
 
   // Get y indexes
   for (i=0; i<Ny; i++) 
-    if (y<ys[i]) break;
+    if (y<y_domain[i]) break;
   j0 = i-1;
   j1 = j0+1;
-  y0 = ys[j0];
-  yd = (y-y0)/(ys[j1]-y0);
+  y0 = y_domain[j0];
+  yd = (y-y0)/(y_domain[j1]-y0);
 
   // Get z indexes (equispaced grid)
   k0 = floor(z/dz);
@@ -55,7 +55,7 @@ double TrilinearInterpolation(double field[Nx][Ny][Nz], double x, double y, doub
 
 void PointsInSphere(int N, double radius,
                     double x0, double y0, double z0,
-                    double xs[N], double ys[N], double zs[N]) {
+                    double *xsphere, double *ysphere, double *zsphere) {
   // Taken from that paper
   int k;
   double hk, cte;
@@ -77,55 +77,63 @@ void PointsInSphere(int N, double radius,
       phi_prev = phi;
     }
 
-    xs[k] = radius*sin(theta)*cos(phi) + x0;
-    ys[k] = radius*sin(theta)*sin(phi) + y0;
-    zs[k] = radius*cos(theta)          + z0;
+    xsphere[k] = radius*sin(theta)*cos(phi) + x0;
+    ysphere[k] = radius*sin(theta)*sin(phi) + y0;
+    zsphere[k] = radius*cos(theta)          + z0;
   }
 }
 
 double IntegrateInArea(int N, double radius,
-                         double x0, double y0, double z0) {
+                       double x0, double y0, double z0) {
   // Integrate the strain in a sphere of a given radius centred around
   // (x0,y0,z0)
 
   int k;
   double value;
-  double xs[N], ys[N], zs[N];
+  double xsphere[N], ysphere[N], zsphere[N];
 
   // Get points
-  PointsInSphere(N, radius, x0, y0, z0, xs, ys, zs);
+  PointsInSphere(N, radius, x0, y0, z0, &xsphere[0], &ysphere[0], &zsphere[0]);
 
   // Integrate
   value = 0.0;
   for (k=0; k<N; k++) {
-    value += TrilinearInterpolation(field, xs[k], ys[k], zs[k]);
+    value += TrilinearInterpolation(xsphere[k], ysphere[k], zsphere[k]);
   }
 
-  /* fprintf(stdout, "area integration: %f\n", (4*M_PI/N)*value); */
   return (4*M_PI/N)*value;
 }
 
-double IntegrateInVolume(double dr, double R,  double alpha,
-                         double x0, double y0, double z0) {
+void IntegrateInVolume(double *result, double dr, double R,  double alpha,
+                       double *xs, double *ys, double *zs, int Npoints) {
   // Integrate the strain non-locally
 
+  int point;
   int i, Nr, Nsphere;
+  double x0, y0, z0;
   double value, aux, radius;
+  
+  for (point=0; point<Npoints; point++) {
+    // Get point
+    x0 = xs[point];
+    y0 = ys[point];
+    z0 = zs[point];
 
-  // Inner point
-  value = 4*M_PI*TrilinearInterpolation(field, x0, y0, z0);
+    // Inner point
+    value = 4*M_PI*TrilinearInterpolation(x0, y0, z0);
 
-  // Spheres
-  Nr = R/dr;
-  for (i=1; i<Nr; i++) {
-    radius  = dr*i;
-    Nsphere = 4*M_PI*radius*radius/(dr*dr);
-    aux = pow(i+1, 1-alpha) - pow(i, 1-alpha);
-    value += aux*IntegrateInArea(Nsphere, radius, x0, y0, z0);
+    // Spheres
+    Nr = R/dr;
+    for (i=1; i<Nr; i++) {
+      radius  = dr*i;
+      Nsphere = 4*M_PI*radius*radius/(dr*dr);
+      aux = pow(i+1, 1-alpha) - pow(i, 1-alpha);
+      value += aux*IntegrateInArea(Nsphere, radius, x0, y0, z0);
+    }
+
+    // Return value
+    aux = 4*M_PI*tgamma(2-alpha);
+    aux = pow(dr, 1-alpha)/aux;
+    result[point] = aux*value;
   }
-
-  // Return value
-  aux = 4*M_PI*tgamma(2-alpha);
-  aux = pow(dr, 1-alpha)/aux;
-  return aux*value;
 }

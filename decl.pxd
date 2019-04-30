@@ -16,8 +16,8 @@ cdef extern from "spherical.h":
     # Global variables
     double field[_Nx][_Ny][_Nz]
     double dx, dz
-    double ys[_Ny]
+    double y_domain[_Ny]
 
     # Functions
-    double IntegrateInVolume(double dr, double R, double alpha,
-                             double x0, double y0, double z0)
+    void IntegrateInVolume(double *result, double dr, double R, double alpha,
+                           double *xs, double *ys, double *zs, int Npoints)
