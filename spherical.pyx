@@ -57,14 +57,16 @@ def IntegrateInVolume(result, dr, R, alpha, xs, ys, zs):
 
 def set_field(field):
     """
-    Set the field use for the integration
+    Set the field used for the integration
 
     Parameters
     ----------
     field : ndarray
         Field to be integrated
     """
-    decl.field = field
+    cdef double[:,:,:] c_field_mv = decl.field
+    cdef double[:,:,:] p_field_mv = field
+    c_field_mv[:] = p_field_mv
 
 def set_domain(dx,y_domain,dz):
     """
