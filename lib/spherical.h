@@ -8,9 +8,9 @@
 # include <time.h>
 
 // If these values are changed, the pyx file has to be updated accordingly
-# define Nx 116
-# define Ny 330
-# define Nz 248
+# define Nx 240
+# define Ny 170
+# define Nz 480
 
 double field[Nx][Ny][Nz];
 double dx, dz;

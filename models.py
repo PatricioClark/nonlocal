@@ -53,15 +53,15 @@ def tensor_dot(A,B):
     Parameters
     ----------
     A, B : ndarray
-        The two fields to be correlated.
+        The two fields to be dotted.
 
     Returns
     -------
     result : float
     """
-    aux  =    A[0,0]*B[0,0] + A[1,1]*B[1,1] + A[2,2]*B[2,2]
-    aux += 2*(A[0,1]*B[0,1] + A[0,2]*B[0,2] + A[1,2]*B[1,2])
-    return aux
+    aux  = np.array([[A[i,j]*B[i,j] for i in range(dims)]
+                                    for j in range(dims)])
+    return np.sum(aux, axis=(0,1))
 
 
 def get_tau_smag(strain,delta,c_s=0.16):
@@ -85,7 +85,7 @@ def get_tau_smag(strain,delta,c_s=0.16):
     tau_smag = -2*nu_smag*strain
     return remove_trace(tau_smag)
 
-def correlations(A,B):
+def correlations(A,B,normalized=False):
     """
     Calculate the correlations between tensors A and B, minus their respective
     means. The result is normalized.
@@ -100,19 +100,36 @@ def correlations(A,B):
     result : float
         Correlation coefficient of fields A and B.
     """
-    prod = np.mean(A,axis=(-1,-2))*np.mean(B,axis=(-1,-2))
-    prod = np.array([[A[i,j]*B[i,j]-prod[i,j] for i in range(dims)]
-                                              for j in range(dims)])
+
+    # Check dims
+    sa = np.shape(A)
+    if sa!=np.shape(B):
+        raise TypeError('Arrays must have the same shape!')
+    
+    # Single component or multi? 1, 2 or 3D?
+    if   sa[0]==dims and sa[1]==dims:
+        idxs     = [(i,j) for i in range(dims) for j in range(dims)]
+        sum_axis = tuple([-1*(i+1) for i in range(len(sa)-2)])
+    elif sa[0]==dims and sa[1]>dims:
+        idxs = range(dims)
+        sum_axis = tuple([-1*(i+1) for i in range(len(sa)-1)])
+    elif sa[0]>dims and sa[1]>dims:
+        idxs = [()]
+        sum_axis = tuple([-1*(i+1) for i in range(len(sa))])
+
+    prod = np.mean(A,axis=sum_axis)*np.mean(B,axis=sum_axis)
+    prod = np.array([A[ip]*B[ip]-prod[ip] for ip in idxs])
     nume = np.mean(prod)
 
-    prod = np.mean(A,axis=(-1,-2))*np.mean(A,axis=(-1,-2))
-    prod = np.array([[A[i,j]*A[i,j]-prod[i,j] for i in range(dims)]
-                                              for j in range(dims)])
-    s1   = np.sqrt(np.mean(prod))
+    if normalized:
+        prod = np.mean(A,axis=sum_axis)*np.mean(A,axis=sum_axis)
+        prod = np.array([A[ip]*A[ip]-prod[ip] for ip in idxs])
+        s1   = np.sqrt(np.mean(prod))
 
-    prod = np.mean(B,axis=(-1,-2))*np.mean(B,axis=(-1,-2))
-    prod = np.array([[B[i,j]*B[i,j]-prod[i,j] for i in range(dims)]
-                                              for j in range(dims)])
-    s2   = np.sqrt(np.mean(prod))
+        prod = np.mean(B,axis=sum_axis)*np.mean(B,axis=sum_axis)
+        prod = np.array([B[ip]*B[ip]-prod[ip] for ip in idxs])
+        s2   = np.sqrt(np.mean(prod))
 
-    return nume/(s1*s2)
+        return nume/(s1*s2)
+    else:
+        return nume

@@ -2,9 +2,9 @@
 # This step is performed so I can then reuse function names in the module
 
 # Definitions
-DEF _Nx=116
-DEF _Ny=330
-DEF _Nz=248
+DEF _Nx=240
+DEF _Ny=170
+DEF _Nz=480
 cdef enum:
     Nx = _Nx
     Ny = _Ny
