@@ -7,7 +7,7 @@ import spherical
 # Everything is in 3D
 dims = 3
 
-def remove_trace(field):
+def remove_trace(field, print_trace=False):
     """
     Make field traceless.
 
@@ -24,6 +24,7 @@ def remove_trace(field):
     trace = np.sum([field[i,i] for i in range(dims)], axis=0)
     for i in range(dims):
         field[i,i] -= (1/dims)*trace
+    if print_trace: print(np.sum(trace))
     return field
 
 def get_tau_dns(filt_velos, filt_prods):
