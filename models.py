@@ -86,15 +86,21 @@ def get_tau_smag(strain,delta,c_s=0.16):
     tau_smag = -2*nu_smag*strain
     return remove_trace(tau_smag)
 
-def correlations(A,B,normalized=False):
+def correlations(A,B,normalized=False,fluctuations=True):
     """
-    Calculate the correlations between tensors A and B, minus their respective
-    means. The result is normalized.
+    Calculate the correlations between tensors A and B. A and B can be zero,
+    one, or two-ranked tensors (each rank is of order dims), and one, two, or
+    three-dimensional fields.
     
     Parameters
     ----------
     A, B : ndarray
         The two fields to be correlated.
+    normalized : bool, optional
+        If True, normalize the output. Default is False.
+    fluctuations : bool, optional
+        If True, calculate the correlations between the fluctuations, i.e.
+        remove the mean of A and B. Default is True.
 
     Returns
     -------
@@ -108,7 +114,10 @@ def correlations(A,B,normalized=False):
         raise TypeError('Arrays must have the same shape!')
     
     # Single component or multi? 1, 2 or 3D?
-    if   sa[0]==dims and sa[1]==dims:
+    if   len(sa)==1:
+        idxs     = [()]
+        sum_axis = 0
+    elif sa[0]==dims and sa[1]==dims:
         idxs     = [(i,j) for i in range(dims) for j in range(dims)]
         sum_axis = tuple([-1*(i+1) for i in range(len(sa)-2)])
     elif sa[0]==dims and sa[1]>dims:
@@ -119,18 +128,58 @@ def correlations(A,B,normalized=False):
         sum_axis = tuple([-1*(i+1) for i in range(len(sa))])
 
     prod = np.mean(A,axis=sum_axis)*np.mean(B,axis=sum_axis)
+    if not fluctuations: prod = np.zeros((dims,dims))
     prod = np.array([A[ip]*B[ip]-prod[ip] for ip in idxs])
     nume = np.mean(prod)
 
     if normalized:
         prod = np.mean(A,axis=sum_axis)*np.mean(A,axis=sum_axis)
+        if not fluctuations: prod = np.zeros((dims,dims))
         prod = np.array([A[ip]*A[ip]-prod[ip] for ip in idxs])
         s1   = np.sqrt(np.mean(prod))
 
         prod = np.mean(B,axis=sum_axis)*np.mean(B,axis=sum_axis)
+        if not fluctuations: prod = np.zeros((dims,dims))
         prod = np.array([B[ip]*B[ip]-prod[ip] for ip in idxs])
         s2   = np.sqrt(np.mean(prod))
 
         return nume/(s1*s2)
     else:
         return nume
+
+def two_point_corr(A,B,axes=2,one_directional=False,fluctuations=True):
+    """
+    Calculate the two-point correlations between two-rank tensors A and B along
+    a given direction.
+
+    Parameters
+    ----------
+    A, B : ndarray
+        The two fields to be correlated.
+
+    Returns
+    -------
+    result : float
+        Correlation coefficient of fields A and B.
+    """
+    # Check dims
+    sa = np.shape(A)
+    if sa!=np.shape(B):
+        raise TypeError('Arrays must have the same shape!')
+
+    L = sa[axes]//2
+    A = np.swapaxes(A,axes,-1)
+    B = np.swapaxes(B,axes,-1)
+
+    corrs = [correlations(A[...,:L],B[...,:L],fluctuations=fluctuations)]
+    for r in range(1,L):
+        local = slice(None,L)
+        prime = slice(r,r+L)
+        aux1 = correlations(A[...,local],B[...,prime],fluctuations=fluctuations)
+        aux2 = correlations(A[...,prime],B[...,local],fluctuations=fluctuations)
+        if one_directional:
+            corrs.append(0.5*(aux1+aux2))
+        else:
+            corrs = [aux2]+corrs+[aux1]
+    return np.array(corrs)
+
