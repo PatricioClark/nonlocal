@@ -1,0 +1,11 @@
+Modules and scripts used for studying nonlocal closures in LES.
+
+The module models contains the functions used to operate on tensors, and
+calculate correlations and the different stress models.
+
+The module spherical contains the necessary functions to perform the nonlocal
+derivatives. It is written in Cython and the C part is located inside lib.
+
+In the examples directory there are a few scripts that retrieve data from the
+database, calculate the different models, and compare the two-point correlation
+functions.
