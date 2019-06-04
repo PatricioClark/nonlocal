@@ -21,22 +21,22 @@ lJHTDB.initialize()
 lJHTDB.add_token(auth_token)
 
 # Dimensions
-dims         = 3
-Nx           = 20
-Ny           = 20
-Nz           = 20
-visc_length  = 1.0006e-3
-dt           = 0.0065
-dx           = 8*np.pi/2048
-dz           = 3*np.pi/1536 
-dx_plus      = dx/visc_length
-dz_plus      = dz/visc_length
-y_points     = np.loadtxt('y_points.txt')
-y_plus       = y_points/visc_length + 1/visc_length
-y0           = 0
-nu           = 5e-5
-RD           = 5
-moving_frame = True
+dims        = 3
+Nx          = 20
+Ny          = 20
+Nz          = 20
+visc_length = 1.0006e-3
+dt          = 0.0065
+dx          = 8*np.pi/2048
+dz          = 3*np.pi/1536 
+dx_plus     = dx/visc_length
+dz_plus     = dz/visc_length
+y_points    = np.loadtxt('y_points.txt')
+y_plus      = y_points/visc_length + 1/visc_length
+y0          = 0
+nu          = 5e-5
+RD          = 5
+fixed_frame = True
 
 # Filter
 delta_plus = 40
@@ -109,7 +109,7 @@ elif t0<=tms*8+ti:
 print(t0,tidx,x0,z0)
 
 # Get velocity field (unfiltered)
-if moving_frame:
+if fixed_frame:
     points = np.zeros((cut_dims[2],cut_dims[1],cut_dims[0],3), np.float32)
     points[...,0] = x_domain[np.newaxis, np.newaxis, :] + x0*dx
     points[...,1] = y_domain[np.newaxis, :, np.newaxis]
