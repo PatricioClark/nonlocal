@@ -12,6 +12,7 @@
 # define Ny 170
 # define Nz 480
 
+int    checkBoundary;
 double field[Nx][Ny][Nz];
 double dx, dz;
 double y_domain[Ny];

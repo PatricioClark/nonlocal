@@ -14,8 +14,9 @@ double TrilinearInterpolation(double x, double y, double z) {
   double c;
 
   // Check boundary conditions
-  if ((y<-1.0) || (y>1.0)) 
-    return 0.0;
+  if (checkBoundary)
+    if ((y<-1.0) || (y>1.0)) 
+      return 0.0;
 
   // Get x indexes (equispaced grid)
   i0 = floor(x/dx);

@@ -13,6 +13,7 @@ cdef enum:
 # External declarations from C part
 cdef extern from "spherical.h":
     # Global variables
+    int    checkBoundary
     double field[_Nx][_Ny][_Nz]
     double dx, dz
     double y_domain[_Ny]

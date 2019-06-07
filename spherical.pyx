@@ -68,7 +68,7 @@ def set_field(field):
     cdef double[:,:,:] p_field_mv = field
     c_field_mv[:] = p_field_mv
 
-def set_domain(dx,y_domain,dz):
+def set_domain(dx,y_domain,dz,check_boundary=True):
     """
     Set the domain parameters. x and z are assumed to be equispaced.
 
@@ -84,3 +84,7 @@ def set_domain(dx,y_domain,dz):
     decl.dx = dx
     decl.dz = dz
     decl.y_domain = y_domain
+    if check_boundary:
+        decl.checkBoundary = 1
+    else:
+        decl.checkBoundary = 0
