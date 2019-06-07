@@ -86,6 +86,36 @@ def get_tau_smag(strain,delta,c_s=0.16):
     tau_smag = -2*nu_smag*strain
     return remove_trace(tau_smag)
 
+def get_tau_nonl(strain_nonl,strain_local,delta,alpha):
+    """
+    Get the nonlocal SGS stresses. Result is already traceless.
+
+    Parameters
+    ----------
+    strain_nonl : ndarray
+        Filtered non-local strain rates of order alpha.
+    strain_local : ndarray
+        Filtered local strain rates.
+    delta : float
+        Filter size
+    alpha : float
+        Non-local order
+
+    Returns
+    -------
+    tau : Non-local stress tensor, result is already traceless.
+    """
+    # Calculate eddy viscosity
+    C_K = 1.5
+    char_strain = np.sqrt(2*tensor_dot(abs(strain_nonl),abs(strain_local)))
+    nu_nonl  = ((alpha+1./3)/C_K)**(3./2)
+    nu_nonl *= (delta/np.pi)**((3.*alpha+1)/2)
+    nu_nonl *= char_strain
+
+    # Calcualte Non-local stress tensor
+    tau_nonl = -2*nu_nonl*strain_nonl
+    return remove_trace(tau_nonl)
+
 def correlations(A,B,normalized=False,fluctuations=True):
     """
     Calculate the correlations between tensors A and B. A and B can be zero,
