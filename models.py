@@ -108,7 +108,7 @@ def get_tau_nonl(strain_nonl,strain_local,delta,alpha):
     # Calculate eddy viscosity
     C_K = 1.5
     char_strain = np.sqrt(2*tensor_dot(abs(strain_nonl),abs(strain_local)))
-    nu_nonl  = ((alpha+1./3)/C_K)**(3./2)
+    nu_nonl  = ((alpha+1./3)/(2*C_K))**(3./2)
     nu_nonl *= (delta/np.pi)**((3.*alpha+1)/2)
     nu_nonl *= char_strain
 
@@ -213,3 +213,6 @@ def two_point_corr(A,B,axes=2,one_directional=False,fluctuations=True):
             corrs = [aux2]+corrs+[aux1]
     return np.array(corrs)
 
+def symmetrize(corr):
+    '''Makes correlation function symmetric/even'''
+    return 0.5*(corr+corr[::-1])
