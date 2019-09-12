@@ -9,7 +9,7 @@
 
 // If these values are changed, the pyx file has to be updated accordingly
 # define Nx 240
-# define Ny 170
+# define Ny 100
 # define Nz 480
 
 int    checkBoundary;

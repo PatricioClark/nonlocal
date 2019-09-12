@@ -2,7 +2,6 @@
 
 # import modules
 import numpy as np
-import spherical
 
 # Everything is in 3D
 dims = 3
@@ -177,7 +176,11 @@ def correlations(A,B,normalized=False,fluctuations=True):
     else:
         return nume
 
-def two_point_corr(A,B,axes=2,one_directional=False,fluctuations=True):
+def two_point_corr(A, B,
+                   axes=2,
+                   one_directional=False,
+                   fluctuations=True,
+                   homogeneous=True):
     """
     Calculate the two-point correlations between two-rank tensors A and B along
     a given direction.
@@ -186,6 +189,19 @@ def two_point_corr(A,B,axes=2,one_directional=False,fluctuations=True):
     ----------
     A, B : ndarray
         The two fields to be correlated.
+    axes : int, optional
+        Direction into which the correlations are to be calculated. Default is 2.
+    one_directional : bool, optional
+        If True, it keeps both -r and +r directions. Otherwise it averages.
+        If flow is not homogenous the branches actually mean A(x)*B(x+r) and
+        A(x+r)*B(x), respectively.  Default is False.
+    fluctuations : bool, optional
+        If True, calculate the correlations between the fluctuations, i.e.
+        remove the mean of A and B. Default is True.
+    homogeneous : bool, optional 
+        If True assume the fields are statistically homogenous and average on
+        the direction of the correlations. If False it calculates the
+        correlations between the starting x0 and x0+r only. Default is True.
 
     Returns
     -------
@@ -197,14 +213,21 @@ def two_point_corr(A,B,axes=2,one_directional=False,fluctuations=True):
     if sa!=np.shape(B):
         raise TypeError('Arrays must have the same shape!')
 
-    L = sa[axes]//2
+    # Determine length
+    Lc = sa[axes]//2
+    if homogeneous:
+        La = Lc
+    else:
+        La = 1
+
+    # Change axes
     A = np.swapaxes(A,axes,-1)
     B = np.swapaxes(B,axes,-1)
 
-    corrs = [correlations(A[...,:L],B[...,:L],fluctuations=fluctuations)]
-    for r in range(1,L):
-        local = slice(None,L)
-        prime = slice(r,r+L)
+    corrs = [correlations(A[...,:La],B[...,:La],fluctuations=fluctuations)]
+    for r in range(1,Lc):
+        local = slice(None,La)
+        prime = slice(r,r+La)
         aux1 = correlations(A[...,local],B[...,prime],fluctuations=fluctuations)
         aux2 = correlations(A[...,prime],B[...,local],fluctuations=fluctuations)
         if one_directional:

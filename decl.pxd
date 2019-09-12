@@ -3,7 +3,7 @@
 
 # Definitions
 DEF _Nx=240
-DEF _Ny=170
+DEF _Ny=100
 DEF _Nz=480
 cdef enum:
     Nx = _Nx
