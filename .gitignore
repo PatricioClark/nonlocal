@@ -1,0 +1,5 @@
+lib?
+spherical*so
+lib/*.a
+lib/*.o
+__pycache__

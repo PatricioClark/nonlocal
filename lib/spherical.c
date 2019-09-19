@@ -3,6 +3,17 @@
 // Include file
 #include "spherical.h"
 
+// Consistency check functions
+int SendNx(){
+  return Nx;
+}
+int SendNy(){
+  return Ny;
+}
+int SendNz(){
+  return Nz;
+}
+
 double TrilinearInterpolation(double x, double y, double z) {
   // Interpolate in 3D using a trilinear method
   int    i;

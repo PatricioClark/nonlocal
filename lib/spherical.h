@@ -9,13 +9,17 @@
 
 // If these values are changed, the pyx file has to be updated accordingly
 # define Nx 240
-# define Ny 100
+# define Ny 334
 # define Nz 480
 
 int    checkBoundary;
 double field[Nx][Ny][Nz];
 double dx, dz;
 double y_domain[Ny];
+
+int SendNx();
+int SendNy();
+int SendNz();
 
 double Trilinear(double x, double y, double z);
 void   PointsInSphere(int N, double radius,

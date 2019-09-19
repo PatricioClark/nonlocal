@@ -71,6 +71,7 @@ def set_field(field):
 def set_domain(dx,y_domain,dz,check_boundary=True):
     """
     Set the domain parameters. x and z are assumed to be equispaced.
+    Also check that the defintions of Nx, Ny, Nz are the same here and in lib.
 
     Parameters
     ----------
@@ -88,3 +89,9 @@ def set_domain(dx,y_domain,dz,check_boundary=True):
         decl.checkBoundary = 1
     else:
         decl.checkBoundary = 0
+
+    cNx = decl.SendNx()
+    cNy = decl.SendNy()
+    cNz = decl.SendNz()
+    if Nx != cNx or Ny!=cNy or Nz!=cNz:
+        raise ValueError("Dimensions do not match between Python and C libraries. Python: {}, {}, {}. C: {}, {}, {}".format(Nx,Ny,Nz,cNx,cNy,cNz))
