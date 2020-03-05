@@ -2,6 +2,7 @@
 
 # import modules
 import numpy as np
+import gc
 
 # Everything is in 3D
 dims = 3
@@ -85,7 +86,7 @@ def get_tau_smag(strain,delta,c_s=0.16):
     tau_smag = -2*nu_smag*strain
     return remove_trace(tau_smag)
 
-def get_tau_nonl(strain_nonl,strain_local,delta,alpha):
+def get_tau_nonl(strain_nonl,strain_local,delta,alpha,cte_eddy_visc=False):
     """
     Get the nonlocal SGS stresses. Result is already traceless.
 
@@ -106,10 +107,13 @@ def get_tau_nonl(strain_nonl,strain_local,delta,alpha):
     """
     # Calculate eddy viscosity
     C_K = 1.5
-    char_strain = np.sqrt(2*tensor_dot(abs(strain_nonl),abs(strain_local)))
-    nu_nonl  = ((alpha+1./3)/(2*C_K))**(3./2)
-    nu_nonl *= (delta/np.pi)**((3.*alpha+1)/2)
-    nu_nonl *= char_strain
+    if cte_eddy_visc:
+        nu_nonl = 1.0
+    else:
+        char_strain = np.sqrt(2*tensor_dot(abs(strain_nonl),abs(strain_local)))
+        nu_nonl  = ((alpha+1./3)/(2*C_K))**(3./2)
+        nu_nonl *= (delta/np.pi)**((3.*alpha+1)/2)
+        nu_nonl *= char_strain
 
     # Calcualte Non-local stress tensor
     tau_nonl = -2*nu_nonl*strain_nonl
@@ -239,3 +243,37 @@ def two_point_corr(A, B,
 def symmetrize(corr):
     '''Makes correlation function symmetric/even'''
     return 0.5*(corr+corr[::-1])
+
+def get_full_corrs(params, field1, field2):
+    ''' Get correlations of full 1024**3 arrays form HIT '''
+    corr = np.zeros(1024)
+    for i in range(1,4):
+        for j in range(1,4):
+            if i>j: continue
+            fact = 1.0
+            if j>1: fact = 2.0
+            print(i,j)
+
+            for ax in range(3):
+                # Get field1
+                A = np.load(f'{params.paths.odir}/{field1}_{i}{j}.npy')
+                A = A.swapaxes(0,ax)
+                A = np.fft.rfftn(A, axes=(0,))
+                gc.collect()
+
+                # Get field2
+                B = np.load(f'{params.paths.odir}/{field2}_{i}{j}.npy')
+                B = B.swapaxes(0,ax)
+                B = np.fft.rfftn(B, axes=(0,))
+                gc.collect()
+
+                corrij = np.conj(A)*B
+                del A
+                del B
+                gc.collect()
+
+                corrij = np.fft.irfftn(corrij, axes=(0,))
+                gc.collect()
+
+                corr += fact*(1./3)*np.mean(corrij, axis=(1,2))
+    return corr
