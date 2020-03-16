@@ -3,8 +3,15 @@
 // Include file
 #include "spherical.h"
 
-void PrintNxNyNz () {
-  printf("%d, %d, %d\n", Nx, Ny, Nz);
+// Consistency check functions
+int SendNx(){
+  return Nx;
+}
+int SendNy(){
+  return Ny;
+}
+int SendNz(){
+  return Nz;
 }
 
 double TrilinearInterpolation(double x, double y, double z) {
