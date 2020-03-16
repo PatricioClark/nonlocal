@@ -11,6 +11,9 @@ Nx = decl.Nx
 Ny = decl.Ny
 Nz = decl.Nz
 
+def PrintNxNyNz():
+    decl.PrintNxNyNz()
+
 def IntegrateInVolume(result, dr, R, alpha, xs, ys, zs):
     """
     Integrate the field set by set_field() using a 3D L-scheme on a given set

@@ -21,3 +21,4 @@ cdef extern from "spherical.h":
     # Functions
     void IntegrateInVolume(double *result, double dr, double R, double alpha,
                            double *xs, double *ys, double *zs, int Npoints)
+    void PrintNxNyNz()

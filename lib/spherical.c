@@ -3,6 +3,10 @@
 // Include file
 #include "spherical.h"
 
+void PrintNxNyNz () {
+  printf("%d, %d, %d\n", Nx, Ny, Nz);
+}
+
 double TrilinearInterpolation(double x, double y, double z) {
   // Interpolate in 3D using a trilinear method
   int    i;

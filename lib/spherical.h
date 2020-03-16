@@ -17,6 +17,7 @@ double field[Nx][Ny][Nz];
 double dx, dz;
 double y_domain[Ny];
 
+void PrintNxNyNz();
 double Trilinear(double x, double y, double z);
 void   PointsInSphere(int N, double radius,
                       double x0, double y0, double z0,

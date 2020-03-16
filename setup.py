@@ -6,13 +6,13 @@ from distutils.extension import Extension
 from Cython.Build import cythonize
 
 examples_extension = Extension(
-    name="spherical5",
+    name="spherical4",
     sources=["spherical.pyx"],
-    libraries=["spherical"],
+    libraries=["spherical4"],
     library_dirs=["lib"],
     include_dirs=["lib"]
 )
 setup(
-    name="spherical5",
+    name="spherical4",
     ext_modules=cythonize([examples_extension])
 )

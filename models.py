@@ -238,4 +238,4 @@ def two_point_corr(A, B,
 
 def symmetrize(corr):
     '''Makes correlation function symmetric/even'''
-    return 0.5*(corr+corr[::-1])
+    return 0.5*(corr+np.roll(corr[::-1],1))
