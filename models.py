@@ -244,9 +244,17 @@ def symmetrize(corr):
     '''Makes correlation function symmetric/even'''
     return 0.5*(corr+corr[::-1])
 
-def get_full_corrs(params, field1, field2):
+def get_full_corrs(params, field1, field2, subsample=False):
     ''' Get correlations of full 1024**3 arrays form HIT '''
-    corr = np.zeros(1024)
+
+    
+    N = 1024
+    sub = slice(None,None)
+    if subsample:
+        N = 128
+        sub = slice(None,None,8)
+
+    corr = np.zeros(N)
     for i in range(1,4):
         for j in range(1,4):
             if i>j: continue
@@ -263,6 +271,7 @@ def get_full_corrs(params, field1, field2):
 
                 # Get field2
                 B = np.load(f'{params.paths.odir}/{field2}_{i}{j}.npy')
+                B = B[sub,sub,sub]
                 B = B.swapaxes(0,ax)
                 B = np.fft.rfftn(B, axes=(0,))
                 gc.collect()
