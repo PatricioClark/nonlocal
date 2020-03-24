@@ -7,8 +7,6 @@ from Cython.Build import cythonize
 
 num = 6
 examples_extension = Extension(
-    name="spherical{}".format(num),
-    sources=["spherical.pyx"],
     libraries=["spherical"],
     library_dirs=["lib{}".format(num)],
     include_dirs=["lib{}".format(num)]
