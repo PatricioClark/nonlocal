@@ -34,32 +34,20 @@ double TrilinearInterpolation(double x, double y, double z) {
   x0 = i0*dx;
   i1 = i0 + 1;
   xd = (x-x0)/dx;
-  if (i1==Nx) i1=0;
 
   // Get y indexes
-  if (checkBoundary) {
-    // Channel with boundary
-    for (i=0; i<Ny; i++) 
-      if (y<y_domain[i]) break;
-    j0 = i-1;
-    j1 = j0+1;
-    y0 = y_domain[j0];
-    yd = (y-y0)/(y_domain[j1]-y0);
-  } else {
-    // dy = dx (equispaced grid)
-    j0 = floor(y/dx);
-    y0 = j0*dx;
-    j1 = j0 + 1;
-    yd = (y-y0)/dx;
-    if (j1==Ny) j1=0;
-  };
+  for (i=0; i<Ny; i++) 
+    if (y<y_domain[i]) break;
+  j0 = i-1;
+  j1 = j0+1;
+  y0 = y_domain[j0];
+  yd = (y-y0)/(y_domain[j1]-y0);
 
   // Get z indexes (equispaced grid)
   k0 = floor(z/dz);
   z0 = k0*dz;
   k1 = k0 + 1;
   zd = (z-z0)/dz;
-  if (k1==Nz) k1=0;
 
   // Interpolation in x
   c00 = field[i0][j0][k0]*(1-xd) + field[i1][j0][k0]*xd;
@@ -116,7 +104,6 @@ double IntegrateInArea(int N, double radius,
   int k;
   double value;
   double xsphere[N], ysphere[N], zsphere[N];
-  double px, py, pz;
 
   // Get points
   PointsInSphere(N, radius, x0, y0, z0, &xsphere[0], &ysphere[0], &zsphere[0]);
@@ -124,31 +111,14 @@ double IntegrateInArea(int N, double radius,
   // Integrate
   value = 0.0;
   for (k=0; k<N; k++) {
-
-    if (checkBoundary) {
-      // Periodic boundary conditions in channel
-      px = fmod(xsphere[k] , 8*M_PI);
-      pz = fmod(zsphere[k] , 3*M_PI);
-      if (px < 0.0) px += 8*M_PI;
-      if (pz < 0.0) pz += 3*M_PI;
-    }  else {
-      // Periodic boundary conditions in box
-      px = fmod(xsphere[k] , 2*M_PI);
-      py = fmod(ysphere[k] , 2*M_PI);
-      pz = fmod(zsphere[k] , 2*M_PI);
-      if (px < 0.0) px += 2*M_PI;
-      if (py < 0.0) py += 2*M_PI;
-      if (pz < 0.0) pz += 2*M_PI;
-    };
-
-    value += TrilinearInterpolation(px, py, pz);
+    value += TrilinearInterpolation(xsphere[k], ysphere[k], zsphere[k]);
   }
 
   return (4*M_PI/N)*value;
 }
 
-void IntegrateInVolume(float *result, double dr, double R,  double alpha,
-                       float *xs, float *ys, float *zs, int Npoints) {
+void IntegrateInVolume(double *result, double dr, double R,  double alpha,
+                       double *xs, double *ys, double *zs, int Npoints) {
   // Integrate field strain non-locally using a modified 3D L-scheme at
   // different locations
   int point;
@@ -157,11 +127,10 @@ void IntegrateInVolume(float *result, double dr, double R,  double alpha,
   double value, aux, radius;
   
   for (point=0; point<Npoints; point++) {
-
     // Get point
-    x0 = (double) xs[point];
-    y0 = (double) ys[point];
-    z0 = (double) zs[point];
+    x0 = xs[point];
+    y0 = ys[point];
+    z0 = zs[point];
 
     // Inner point
     value = 4*M_PI*TrilinearInterpolation(x0, y0, z0);
@@ -178,8 +147,6 @@ void IntegrateInVolume(float *result, double dr, double R,  double alpha,
     // Return value
     aux = 4*M_PI*tgamma(2-alpha);
     aux = pow(dr, 1-alpha)/aux;
-    result[point] = (float) aux*value;
-
-    /* if (point % 1000 == 0) printf("points %d\n", point); */
+    result[point] = aux*value;
   }
 }

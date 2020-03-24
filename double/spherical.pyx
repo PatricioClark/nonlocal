@@ -45,10 +45,10 @@ def IntegrateInVolume(result, dr, R, alpha, xs, ys, zs):
     N = len(result.ravel())
 
     # Create memoryview of the arrays
-    cdef float[:] result_mv = result.ravel()
-    cdef float[:] xs_mv = xs.ravel()
-    cdef float[:] ys_mv = ys.ravel()
-    cdef float[:] zs_mv = zs.ravel()
+    cdef double[:] result_mv = result.ravel()
+    cdef double[:] xs_mv = xs.ravel()
+    cdef double[:] ys_mv = ys.ravel()
+    cdef double[:] zs_mv = zs.ravel()
 
     # Calculate integral at each point and return array
     decl.IntegrateInVolume(&result_mv[0], dr, R, alpha,
@@ -64,8 +64,8 @@ def set_field(field):
     field : ndarray
         Field to be integrated
     """
-    cdef float[:,:,:] c_field_mv = decl.field
-    cdef float[:,:,:] p_field_mv = field
+    cdef double[:,:,:] c_field_mv = decl.field
+    cdef double[:,:,:] p_field_mv = field
     c_field_mv[:] = p_field_mv
 
 def set_domain(dx,y_domain,dz,check_boundary=True):

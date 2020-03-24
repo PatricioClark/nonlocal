@@ -2,9 +2,9 @@
 # This step is performed so I can then reuse function names in the module
 
 # Definitions
-DEF _Nx=1024
-DEF _Ny=1024
-DEF _Nz=1024
+DEF _Nx=480
+DEF _Ny=295
+DEF _Nz=960
 cdef enum:
     Nx = _Nx
     Ny = _Ny
@@ -14,7 +14,7 @@ cdef enum:
 cdef extern from "spherical.h":
     # Global variables
     int    checkBoundary
-    float field[_Nx][_Ny][_Nz]
+    double field[_Nx][_Ny][_Nz]
     double dx, dz
     double y_domain[_Ny]
 
@@ -22,5 +22,5 @@ cdef extern from "spherical.h":
     int  SendNx()
     int  SendNy()
     int  SendNz()
-    void IntegrateInVolume(float *result, double dr, double R, double alpha,
-                           float *xs, float *ys, float *zs, int Npoints)
+    void IntegrateInVolume(double *result, double dr, double R, double alpha,
+                           double *xs, double *ys, double *zs, int Npoints)
