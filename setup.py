@@ -5,8 +5,10 @@ from distutils.core import setup
 from distutils.extension import Extension
 from Cython.Build import cythonize
 
-num = 6
+num = 7
 examples_extension = Extension(
+    name="spherical{}".format(num),
+    sources=["spherical.pyx"],
     libraries=["spherical"],
     library_dirs=["lib{}".format(num)],
     include_dirs=["lib{}".format(num)]
