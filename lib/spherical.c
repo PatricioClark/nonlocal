@@ -128,6 +128,7 @@ double IntegrateInArea(int N, double radius,
     if (checkBoundary) {
       // Periodic boundary conditions in channel
       px = fmod(xsphere[k] , 8*M_PI);
+      py = ysphere[k];
       pz = fmod(zsphere[k] , 3*M_PI);
       if (px < 0.0) px += 8*M_PI;
       if (pz < 0.0) pz += 3*M_PI;
