@@ -247,7 +247,6 @@ def symmetrize(corr):
 def get_full_corrs(params, field1, field2, subsample=False):
     ''' Get correlations of full 1024**3 arrays form HIT '''
 
-    
     N = 1024
     sub = slice(None,None)
     if subsample:
@@ -285,4 +284,171 @@ def get_full_corrs(params, field1, field2, subsample=False):
                 gc.collect()
 
                 corr += fact*(1./3)*np.mean(corrij, axis=(1,2))
+    return corr
+
+def get_full_onep_corrs(params, field1, field2, subsample=False):
+    ''' Get correlations of full 1024**3 arrays form HIT '''
+
+    N = 1024
+    sub = slice(None,None)
+    if subsample:
+        N = 128
+        sub = slice(None,None,8)
+
+    corr = 0
+    for i in range(1,4):
+        for j in range(1,4):
+            # if i>j: continue
+            if i!=1: continue
+            if j!=1: continue
+            fact = 1.0
+            if j>1: fact = 2.0
+
+            # Get field1
+            A  = np.load(f'{params.paths.odir}/{field1}_{i}{j}.npy')
+            A  = -A
+            ma = np.mean(A)
+            sa = np.std(A)
+            gc.collect()
+
+            # Get field2
+            B  = np.load(f'{params.paths.odir}/{field2}_{i}{j}.npy')
+            B  = B[sub,sub,sub]
+            mb = np.mean(B)
+            sb = np.std(B)
+            gc.collect()
+
+            corr += fact*(np.mean(A*B) - ma*mb)/(sa*sb)
+            del A
+            del B
+            gc.collect()
+    return corr
+
+def get_full_stats(params, field1, field2, subsample=False):
+    ''' Get statistics of full 1024**3 arrays form HIT '''
+
+    N = 1024
+    sub = slice(None,None)
+    if subsample:
+        N = 128
+        sub = slice(None,None,8)
+
+    diss = np.zeros((N,N,N))
+    for i in range(1,4):
+        for j in range(1,4):
+            if i>j: continue
+            fact = 1.0
+            if j>1: fact = 2.0
+
+            # Get field1
+            A  = np.load(f'{params.paths.odir}/{field1}_{i}{j}.npy')
+            gc.collect()
+
+            # Get field2
+            B  = np.load(f'{params.paths.odir}/{field2}_{i}{j}.npy')
+            B  = B[sub,sub,sub]
+            gc.collect()
+
+            diss += fact*A*B
+            del A
+            del B
+            gc.collect()
+    return diss
+
+def get_chan_corrs(params, field1, field2, axis, subsample=False):
+    ''' Get correlations of channel '''
+
+    if   axis==0:
+        N = params.Nx
+    elif axis==2:
+        N = params.Nz
+
+    ys = np.array([70, 120, 256])
+    sub = slice(None,None)
+    sby = ys
+    if subsample:
+        N = N//2
+        sub = slice(None,None,2)
+        sby = slice(None,None)
+
+
+    corr = np.zeros((N,3))
+    for i in range(1,4):
+        for j in range(1,4):
+            if i>j: continue
+            fact = 1.0
+            if j>1: fact = 2.0
+            print(i,j)
+
+            # Get field1
+            A = np.load(f'{params.paths.odir}/{field1}_{i}{j}.npy')
+            A = A[:,sby,:]
+            for ii in range(3):
+                A[:,ii,:] -= A[:,ii,:].mean()
+            A = A.swapaxes(0,axis)
+            A = np.fft.rfftn(A, axes=(0,))
+            gc.collect()
+
+            # Get field2
+            B = np.load(f'{params.paths.odir}/{field2}_{i}{j}.npy')
+            B = B[sub,ys,sub]
+            for ii in range(3):
+                B[:,ii,:] -= B[:,ii,:].mean()
+            B = B.swapaxes(0,axis)
+            B = np.fft.rfftn(B, axes=(0,))
+            gc.collect()
+
+            corrij = np.conj(A)*B
+            del A
+            del B
+            gc.collect()
+
+            corrij = np.fft.irfftn(corrij, axes=(0,))
+            gc.collect()
+
+            corr += fact*np.mean(corrij, axis=(2,))
+    return corr
+
+def get_onep_chan_corrs(params, field1, field2, subsample=False):
+    ''' Get correlations of full 1024**3 arrays form HIT '''
+
+
+    Nx = params.Nx
+    Nz = params.Nz
+
+    ys = np.array([70, 120, 256])
+    sub = slice(None,None)
+    sby = ys
+    if subsample:
+        Nx = Nx//2
+        Nz = Nz//2
+        sub = slice(None,None,2)
+        sby = slice(None,None)
+
+
+    corr = np.zeros(3)
+    for i in range(1,4):
+        for j in range(1,4):
+            # if i>j: continue
+            if i!=1: continue
+            if j!=1: continue
+            fact = 1.0
+            if j>1: fact = 2.0
+
+            # Get field1
+            A = np.load(f'{params.paths.odir}/{field1}_{i}{j}.npy')
+            A = -A[:,sby,:]
+            for ii in range(3):
+                A[:,ii,:] -= A[:,ii,:].mean()
+            sa = np.std(A, axis=(0,2))
+            gc.collect()
+
+            # Get field2
+            B = np.load(f'{params.paths.odir}/{field2}_{i}{j}.npy')
+            B = B[sub,ys,sub]
+            for ii in range(3):
+                B[:,ii,:] -= B[:,ii,:].mean()
+            sb = np.std(B, axis=(0,2))
+
+            corr += fact*np.mean(A*B, axis=(0,2))/(sa*sb)
     return corr
